@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coupon Distribution</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 20px;
+            text-align: center;
+        }
+        .button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            margin: 20px 0;
+        }
+        .button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        #result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 4px;
+        }
+        .success {
+            background-color: #dff0d8;
+            color: #3c763d;
+        }
+        .error {
+            background-color: #f2dede;
+            color: #a94442;
+        }
+    </style>
+</head>
+<body>
+    <h2>Claim a Coupon</h2>
+    <button id="claimButton" class="button" onclick="claimCoupon()">Get Coupon</button>
+    <p id="result"></p>
+
+    <script>
+        // Get API URL from window object or use default
+        const API_URL = window.API_URL || 'http://localhost:8080';
+        
+        async function claimCoupon() {
+            const button = document.getElementById('claimButton');
+            const resultElement = document.getElementById('result');
+            
+            try {
+                button.disabled = true;
+                resultElement.className = '';
+                resultElement.textContent = 'Claiming coupon...';
+                
+                const response = await fetch(`${API_URL}/api/coupons/claim`, {
+                    credentials: 'include',
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to claim coupon');
+                }
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    resultElement.className = 'success';
+                    resultElement.textContent = `${data.message} - Code: ${data.couponCode}`;
+                } else {
+                    resultElement.className = 'error';
+                    resultElement.textContent = data.message;
+                    
+                    if (data.waitTimeInSeconds > 0) {
+                        startCountdown(data.waitTimeInSeconds);
+                    }
+                }
+            } catch (error) {
+                resultElement.className = 'error';
+                resultElement.textContent = 'An error occurred while claiming the coupon.';
+            } finally {
+                if (!resultElement.textContent.includes('wait')) {
+                    button.disabled = false;
+                }
+            }
+        }
+
+        function startCountdown(seconds) {
+            const button = document.getElementById('claimButton');
+            const updateCountdown = () => {
+                if (seconds <= 0) {
+                    button.disabled = false;
+                    button.textContent = 'Get Coupon';
+                    return;
+                }
+                button.disabled = true;
+                button.textContent = `Wait ${seconds}s`;
+                seconds--;
+                setTimeout(updateCountdown, 1000);
+            };
+            updateCountdown();
+        }
+    </script>
+</body>
+</html>
