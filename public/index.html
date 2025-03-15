@@ -43,11 +43,10 @@
 </head>
 <body>
     <h2>Claim a Coupon</h2>
-    <button id="claimButton" class="button" onclick="claimCoupon()">Get Coupon</button>
+    <button id="claimButton" class="button" onclick="claimCoupon()">Claim Coupon</button>
     <p id="result"></p>
 
     <script>
-        // Update API URL to point to Railway deployment
         const API_URL = 'https://assign-production-f077.up.railway.app';
         
         async function claimCoupon() {
@@ -59,32 +58,50 @@
                 resultElement.className = '';
                 resultElement.textContent = 'Claiming coupon...';
                 
-                const response = await fetch(`${API_URL}/api/coupons`, {
-                    method: 'GET',
+                const response = await fetch(`${API_URL}/api/coupons/claim`, {
+                    method: 'POST',
                     headers: {
                         'Accept': 'application/json',
                         'Content-Type': 'application/json'
-                    }
+                    },
+                    body: JSON.stringify({
+                        browserSession: generateSessionId(),
+                        ipAddress: await getIPAddress()
+                    })
                 });
                 
                 if (!response.ok) {
-                    throw new Error('Failed to fetch coupons');
+                    throw new Error('Failed to claim coupon');
                 }
 
                 const data = await response.json();
                 
-                if (data.status === 'success') {
+                if (data.success) {
                     resultElement.className = 'success';
-                    resultElement.textContent = `${data.message} - Available Coupons: ${data.data.length}`;
+                    resultElement.textContent = `Success! Your coupon code is: ${data.couponCode}`;
                 } else {
                     resultElement.className = 'error';
-                    resultElement.textContent = data.message;
+                    resultElement.textContent = data.message || 'Failed to claim coupon';
                 }
             } catch (error) {
                 resultElement.className = 'error';
-                resultElement.textContent = 'An error occurred while fetching coupons.';
+                resultElement.textContent = 'An error occurred while claiming the coupon.';
             } finally {
                 button.disabled = false;
+            }
+        }
+
+        function generateSessionId() {
+            return 'session_' + Math.random().toString(36).substr(2, 9);
+        }
+
+        async function getIPAddress() {
+            try {
+                const response = await fetch('https://api.ipify.org?format=json');
+                const data = await response.json();
+                return data.ip;
+            } catch (error) {
+                return 'unknown';
             }
         }
     </script>
