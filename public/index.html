@@ -47,8 +47,8 @@
     <p id="result"></p>
 
     <script>
-        // Get API URL from window object or use default
-        const API_URL = window.API_URL || 'https://coupon-backend-production.up.railway.app';
+        // Update API URL to point to Railway deployment
+        const API_URL = 'https://assign-production-f077.up.railway.app';
         
         async function claimCoupon() {
             const button = document.getElementById('claimButton');
@@ -59,54 +59,33 @@
                 resultElement.className = '';
                 resultElement.textContent = 'Claiming coupon...';
                 
-                const response = await fetch(`${API_URL}/api/coupons/claim`, {
-                    credentials: 'include',
+                const response = await fetch(`${API_URL}/api/coupons`, {
+                    method: 'GET',
                     headers: {
-                        'Accept': 'application/json'
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
                     }
                 });
                 
                 if (!response.ok) {
-                    throw new Error('Failed to claim coupon');
+                    throw new Error('Failed to fetch coupons');
                 }
 
                 const data = await response.json();
                 
-                if (data.success) {
+                if (data.status === 'success') {
                     resultElement.className = 'success';
-                    resultElement.textContent = `${data.message} - Code: ${data.couponCode}`;
+                    resultElement.textContent = `${data.message} - Available Coupons: ${data.data.length}`;
                 } else {
                     resultElement.className = 'error';
                     resultElement.textContent = data.message;
-                    
-                    if (data.waitTimeInSeconds > 0) {
-                        startCountdown(data.waitTimeInSeconds);
-                    }
                 }
             } catch (error) {
                 resultElement.className = 'error';
-                resultElement.textContent = 'An error occurred while claiming the coupon.';
+                resultElement.textContent = 'An error occurred while fetching coupons.';
             } finally {
-                if (!resultElement.textContent.includes('wait')) {
-                    button.disabled = false;
-                }
+                button.disabled = false;
             }
-        }
-
-        function startCountdown(seconds) {
-            const button = document.getElementById('claimButton');
-            const updateCountdown = () => {
-                if (seconds <= 0) {
-                    button.disabled = false;
-                    button.textContent = 'Get Coupon';
-                    return;
-                }
-                button.disabled = true;
-                button.textContent = `Wait ${seconds}s`;
-                seconds--;
-                setTimeout(updateCountdown, 1000);
-            };
-            updateCountdown();
         }
     </script>
 </body>
