@@ -3,176 +3,41 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Coupon Distribution</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 800px;
-            margin: 40px auto;
-            padding: 20px;
-            text-align: center;
-        }
-        .button {
-            padding: 10px 20px;
-            font-size: 16px;
-            cursor: pointer;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            margin: 20px 0;
-        }
-        .button:disabled {
-            background-color: #cccccc;
-            cursor: not-allowed;
-        }
-        #result {
-            margin-top: 20px;
-            padding: 15px;
-            border-radius: 4px;
-        }
-        .success {
-            background-color: #dff0d8;
-            color: #3c763d;
-        }
-        .error {
-            background-color: #f2dede;
-            color: #a94442;
-        }
-        .container {
-            background-color: #ffffff;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            padding: 30px;
-            margin-bottom: 30px;
-        }
-
-        .info-container {
-            text-align: left;
-            background-color: #f8f9fa;
-            border-radius: 8px;
-            padding: 20px;
-            margin-top: 40px;
-        }
-
-        .author {
-            font-size: 1.2em;
-            color: #2c3e50;
-            margin-bottom: 20px;
-            text-align: center;
-            font-weight: bold;
-        }
-
-        .how-it-works {
-            margin-top: 20px;
-        }
-
-        .how-it-works h3 {
-            color: #2c3e50;
-            margin-bottom: 15px;
-        }
-
-        .how-it-works ul {
-            list-style-type: none;
-            padding-left: 0;
-        }
-
-        .how-it-works li {
-            margin-bottom: 10px;
-            padding-left: 20px;
-            position: relative;
-        }
-
-        .how-it-works li:before {
-            content: "•";
-            position: absolute;
-            left: 0;
-            color: #4CAF50;
-        }
-    </style>
+    <title>Round-Robin Coupon Distribution</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div class="container">
-        <h2>Claim a Coupon</h2>
-        <button id="claimButton" class="button" onclick="claimCoupon()">Claim Coupon</button>
-        <p id="result"></p>
-    </div>
-
-    <div class="info-container">
-        <div class="author">
-            Created by Khushwant Singh Chouhan
+        <h1>Coupon Distribution System</h1>
+        <p>Click the button below to claim your coupon!</p>
+        
+        <div class="coupon-container">
+            <button id="claimButton" class="button">Claim Coupon</button>
+            <div id="result" class="result-container"></div>
+            <div id="timer" class="timer-container"></div>
         </div>
-        <div class="how-it-works">
-            <h3>How It Works</h3>
+        
+        <div class="info-container">
+            <h2>Created by Khushwant Singh Chouhan</h2>
+            <h2>How It Works</h2>
             <ul>
                 <li>Each user can claim one coupon at a time</li>
-                <li>Coupons are distributed in a round-robin fashion for fairness</li>
-                <li>There's a 1-hour cooldown period between claims from the same IP address</li>
-                <li>Browser session tracking prevents multiple claims from the same browser</li>
-                <li>Clear feedback is provided about claim status and waiting periods</li>
-                <li>No login required - just click the button to claim your coupon!</li>
+                <li>You must wait 1 hour before claiming another coupon</li>
+                <li>Coupons are distributed in a round-robin fashion</li>
+                <li>No login required - we use cookies to track your session</li>
+            </ul>
+            <h2>What I Have Used</h2>
+            <p>This coupon distribution system is built using modern web technologies:</p>
+            <ul>
+                <li><strong>Frontend:</strong> HTML5, CSS3, and vanilla JavaScript for a lightweight, responsive user interface</li>
+                <li><strong>Backend:</strong> Spring Boot for robust API development</li>
+                <li><strong>Distribution Algorithm:</strong> Round-robin system that cycles through available coupons fairly</li>
+                <li><strong>Security:</strong> Rate limiting (1 hour cooldown) to prevent abuse and ensure fair distribution</li>
+                <li><strong>Deployment:</strong> Railway for continuous deployment and hosting</li>
             </ul>
         </div>
     </div>
-
-    <script>
-        const API_URL = 'https://assign-production-f077.up.railway.app';
-        
-        async function claimCoupon() {
-            const button = document.getElementById('claimButton');
-            const resultElement = document.getElementById('result');
-            
-            try {
-                button.disabled = true;
-                resultElement.className = '';
-                resultElement.textContent = 'Claiming coupon...';
-                
-                const response = await fetch(`${API_URL}/api/coupons/claim`, {
-                    method: 'POST',
-                    headers: {
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        browserSession: generateSessionId(),
-                        ipAddress: await getIPAddress()
-                    })
-                });
-                
-                if (!response.ok) {
-                    throw new Error('Failed to claim coupon');
-                }
-
-                const data = await response.json();
-                
-                if (data.success) {
-                    resultElement.className = 'success';
-                    resultElement.textContent = `Success! Your coupon code is: ${data.couponCode}`;
-                } else {
-                    resultElement.className = 'error';
-                    resultElement.textContent = data.message || 'Failed to claim coupon';
-                }
-            } catch (error) {
-                resultElement.className = 'error';
-                resultElement.textContent = 'An error occurred while claiming the coupon.';
-            } finally {
-                button.disabled = false;
-            }
-        }
-
-        function generateSessionId() {
-            return 'session_' + Math.random().toString(36).substr(2, 9);
-        }
-
-        async function getIPAddress() {
-            try {
-                const response = await fetch('https://api.ipify.org?format=json');
-                const data = await response.json();
-                return data.ip;
-            } catch (error) {
-                return 'unknown';
-            }
-        }
-    </script>
+    
+    <script src="script.js"></script>
 </body>
 </html>
