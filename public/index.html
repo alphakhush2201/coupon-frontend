@@ -39,12 +39,81 @@
             background-color: #f2dede;
             color: #a94442;
         }
+        .container {
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+
+        .info-container {
+            text-align: left;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 40px;
+        }
+
+        .author {
+            font-size: 1.2em;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .how-it-works {
+            margin-top: 20px;
+        }
+
+        .how-it-works h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+
+        .how-it-works ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+
+        .how-it-works li {
+            margin-bottom: 10px;
+            padding-left: 20px;
+            position: relative;
+        }
+
+        .how-it-works li:before {
+            content: "•";
+            position: absolute;
+            left: 0;
+            color: #4CAF50;
+        }
     </style>
 </head>
 <body>
-    <h2>Claim a Coupon</h2>
-    <button id="claimButton" class="button" onclick="claimCoupon()">Claim Coupon</button>
-    <p id="result"></p>
+    <div class="container">
+        <h2>Claim a Coupon</h2>
+        <button id="claimButton" class="button" onclick="claimCoupon()">Claim Coupon</button>
+        <p id="result"></p>
+    </div>
+
+    <div class="info-container">
+        <div class="author">
+            Created by Khushwant Singh Chouhan
+        </div>
+        <div class="how-it-works">
+            <h3>How It Works</h3>
+            <ul>
+                <li>Each user can claim one coupon at a time</li>
+                <li>Coupons are distributed in a round-robin fashion for fairness</li>
+                <li>There's a 1-hour cooldown period between claims from the same IP address</li>
+                <li>Browser session tracking prevents multiple claims from the same browser</li>
+                <li>Clear feedback is provided about claim status and waiting periods</li>
+                <li>No login required - just click the button to claim your coupon!</li>
+            </ul>
+        </div>
+    </div>
 
     <script>
         const API_URL = 'https://assign-production-f077.up.railway.app';
